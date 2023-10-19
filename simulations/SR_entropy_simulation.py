@@ -166,21 +166,53 @@ def compute_entropies(params):
             print(entropy[e])
     return entropy
 
+def compute_boundary_entropies(params):
+    boundary_entropy = np.zeros(100)
+    nonboundary_entropy = np.zeros(100)
+    graph = np.zeros((15, 15))
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular', 'lattice'])
+    alpha = params[0]
+    gamma = params[1]
+    if params[2] == 'modular':
+        graph = create_modular(graph)
+    else:
+        graph = create_lattice(graph)
+
+    for e in range(100):
+        path = random_walk(graph)
+        SR = draw_SR_categories(path, 1000, alpha=alpha, gamma=gamma, plot=False)
+        for node in range(15):
+            if node%5 == 0  or node%5 == 4:
+                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/6
+            else:
+                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/9
+            if e%99 == 0:
+                print(boundary_entropy[e])
+        return boundary_entropy - nonboundary_entropy
+
+
+
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
 
 p = multiprocessing.Pool()
-entropy = p.map(compute_entropies, params)
+# entropy = p.map(compute_entropies, params)
+boundary_entropy = p.map(compute_boundary_entropies, params)
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular', 'lattice'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
 params = np.array([a for a in params])
 
-df_entropy = pd.DataFrame({
+# df_entropy = pd.DataFrame({
+#     'alpha': np.repeat(params[:, 0], 100),
+#     'gamma': np.repeat(params[:, 1], 100),
+#     'graph type': np.repeat(params[:, 2], 100),
+#     'entropy': np.ravel(entropy)
+# })
+df_boundary_entropy = pd.DataFrame({
     'alpha': np.repeat(params[:, 0], 100),
     'gamma': np.repeat(params[:, 1], 100),
-    'graph type': np.repeat(params[:, 2], 100),
-    'entropy': np.ravel(entropy)
+    'entropy': np.ravel(boundary_entropy)
 })
 
-print(df_entropy)
-df_entropy.to_csv('results/df_entropy.csv', index = False)
+print(df_boundary_entropy)
+df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
+
