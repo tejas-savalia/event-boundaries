@@ -167,12 +167,12 @@ def compute_entropies(params):
     return entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.2, 0.5], [0.01, 0.05, 0.1, 0.2, 0.5], ['modular', 'lattice'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular', 'lattice'])
 
 p = multiprocessing.Pool()
 entropy = p.map(compute_entropies, params)
 
-params = itertools.product([0.01, 0.05, 0.1, 0.2, 0.5], [0.01, 0.05, 0.1, 0.2, 0.5], ['modular', 'lattice'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular', 'lattice'])
 params = np.array([a for a in params])
 
 df_entropy = pd.DataFrame({
@@ -181,5 +181,6 @@ df_entropy = pd.DataFrame({
     'graph type': np.repeat(params[:, 2], 100),
     'entropy': np.ravel(entropy)
 })
+
 print(df_entropy)
-df_entropy.to_csv('df_entropy.csv', index = False)
+df_entropy.to_csv('results/df_entropy.csv', index = False)
