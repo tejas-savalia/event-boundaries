@@ -1,0 +1,6 @@
+﻿block.thisRepN,block.thisTrialN,block.thisN,block.thisIndex,welcome_text.started,instructions_0_keypress.started,instructions_0_keypress.keys,instructions_0_keypress.rt,instructions_1_keypress.started,instructions_1_text.started,instructions_1_keypress.keys,instructions_1_keypress.rt,instructions_2_keypress.started,instructions_2_text.started,instructions_2_keypress.keys,instructions_2_keypress.rt,text_countdown.started,seq_reveal.started,seq_reveal_adv.started,seq_reveal_adv.keys,seq_reveal_adv.rt,instruction_2afc_text.started,instruction_2afc_keypress.started,participant,session,date,expName,psychopyVersion,frameRate,
+,,,,27.406816500006244,27.406816500006244,return,1.5040666999993846,,,,,,,,,,,,,,,,301293,001,2023-03-07_22h34.07.516,eb_01,2022.2.5,60.05255799697681,
+,,,,,,,,28.93765330000315,28.93765330000315,return,0.6027629000018351,,,,,,,,,,,,301293,001,2023-03-07_22h34.07.516,eb_01,2022.2.5,60.05255799697681,
+,,,,,,,,,,,,29.57108490000246,29.57108490000246,space,0.8013666000042576,,,,,,,,301293,001,2023-03-07_22h34.07.516,eb_01,2022.2.5,60.05255799697681,
+,,,,,,,,,,,,,,,,30.425683600013144,35.42050619999645,36.904150700022,space,0.6314939000003505,,,301293,001,2023-03-07_22h34.07.516,eb_01,2022.2.5,60.05255799697681,
+,,,,,,,,,,,,,,,,,,,,,37.554294300003676,39.054269600019325,,,,,,,
