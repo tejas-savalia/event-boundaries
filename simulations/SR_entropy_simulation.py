@@ -89,7 +89,7 @@ def random_walk(graph):
 
 def draw_SR_categories(path, cutoff_point, alpha = 0.1, gamma = 0.1, num_nodes = 15, plot = True):
     SR = np.random.uniform(0, 1, size=(num_nodes, num_nodes))
-    start_state = np.random.choice(np.arange(8))
+    start_state = np.random.choice(np.arange(num_nodes))
     current_state = start_state    
     cmap = plt.cm.rainbow
 
@@ -124,7 +124,7 @@ def draw_SR_categories(path, cutoff_point, alpha = 0.1, gamma = 0.1, num_nodes =
 
     #     print(prob, cluster)
     #     print(prob)
-        for node in range(15):
+        for node in range(num_nodes):
             node_distance = np.linalg.norm(SR[node] - centroids, axis=1)
 
     #         node_confidences = np.exp(-node_distance / 2) / np.sum(np.exp(-node_distance / 2), axis=0)
@@ -155,7 +155,7 @@ def draw_SR_categories(path, cutoff_point, alpha = 0.1, gamma = 0.1, num_nodes =
         weights = [SR[int(u)][int(v)] for u,v in edges]
 
         node_pos = nx.spring_layout(G)
-        node_labels = np.arange(15).astype(str)
+        node_labels = np.arange(num_nodes).astype(str)
 
         nx.draw_networkx_nodes(G, pos=node_pos, node_color=node_transparency,  nodelist=G.nodes)
         nx.draw_networkx_edges(G, pos=node_pos, width=weights)
