@@ -108,43 +108,45 @@ def draw_SR_categories(path, cutoff_point, alpha = 0.1, gamma = 0.1, num_nodes =
 
 
 
-    G = nx.Graph() 
-
-
-    kmeans = KMeans(n_clusters=3, random_state=0, n_init="auto").fit(SR)
-#     gm = GaussianMixture(n_components=3, random_state=0, reg_covar=0.05).fit(SR)
-    node_color = []
-    node_transparency = []
-    clusters_assigned = kmeans.predict(SR)
-    centroids = kmeans.cluster_centers_
-    
-#     print(distances)
-
-#     print(prob, cluster)
-#     print(prob)
-    for node in range(15):
-        node_distance = np.linalg.norm(SR[node] - centroids, axis=1)
-
-#         node_confidences = np.exp(-node_distance / 2) / np.sum(np.exp(-node_distance / 2), axis=0)
-        node_confidences = scipy.special.softmax(1/node_distance)
-        node_transparency.append(node_confidences)
-        
-        
-
-        if kmeans.labels_[node] == 0:
-#         if cluster[node] == 0:
-            node_color.append('red')
-        elif kmeans.labels_[node] == 1:
-#         elif cluster[node] == 1:
-            node_color.append('green')
-        else:
-            node_color.append('blue')
-        
-        G.add_node(str(node))
-
-    # print(node_transparency)
 
     if plot:
+        G = nx.Graph() 
+
+
+        kmeans = KMeans(n_clusters=3, random_state=0, n_init="auto").fit(SR)
+    #     gm = GaussianMixture(n_components=3, random_state=0, reg_covar=0.05).fit(SR)
+        node_color = []
+        node_transparency = []
+        clusters_assigned = kmeans.predict(SR)
+        centroids = kmeans.cluster_centers_
+        
+    #     print(distances)
+
+    #     print(prob, cluster)
+    #     print(prob)
+        for node in range(15):
+            node_distance = np.linalg.norm(SR[node] - centroids, axis=1)
+
+    #         node_confidences = np.exp(-node_distance / 2) / np.sum(np.exp(-node_distance / 2), axis=0)
+            node_confidences = scipy.special.softmax(1/node_distance)
+            node_transparency.append(node_confidences)
+            
+            
+
+            if kmeans.labels_[node] == 0:
+    #         if cluster[node] == 0:
+                node_color.append('red')
+            elif kmeans.labels_[node] == 1:
+    #         elif cluster[node] == 1:
+                node_color.append('green')
+            else:
+                node_color.append('blue')
+            
+            G.add_node(str(node))
+
+        # print(node_transparency)
+
+
         for i in range(SR.shape[0]):
             for j in range(SR.shape[1]):
                 G.add_edge(str(i), str(j), weight = SR[i][j])    
@@ -209,7 +211,7 @@ def compute_boundary_entropies(params):
 
 def compute_node_entropies(params):
     graph = np.zeros((12, 12))
-    node_entropy = np.zeros(graph.shape[0], 100)
+    node_entropy = np.zeros((graph.shape[0], 100))
 
     alpha = params[0]
     gamma = params[1]
@@ -222,19 +224,19 @@ def compute_node_entropies(params):
 
     for e in range(100):
         path = random_walk(graph)
-        SR = draw_SR_categories(path, 1000, alpha=alpha, gamma=gamma, plot=False)
+        SR = draw_SR_categories(path, 1000, num_nodes=12, alpha=alpha, gamma=gamma, plot=False)
         for node in range(graph.shape[0]):
-            node_entropy[node][e] = -np.sum(SR[node]*np.log(SR[node]))/6
+            node_entropy[node][e] = -np.sum(SR[node]*np.log(SR[node]))
         return node_entropy
 
 
-params = itertools.product([0.01], [0.75, 0.99], ['remote'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['remote'])
 
 p = multiprocessing.Pool()
 # entropy = p.map(compute_entropies, params)
 node_entropy = np.array(p.map(compute_node_entropies, params))
-print(node_entropy.shape)
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['remote'])
+
 params = np.array([a for a in params])
 
 # df_entropy = pd.DataFrame({
@@ -251,4 +253,13 @@ params = np.array([a for a in params])
 
 # print(df_boundary_entropy)
 # df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
+
+df_remote_entropy = pd.DataFrame({
+    'alpha': np.repeat(params[:, 0], 100*12),
+    'gamma': np.repeat(params[:, 1], 100*12),
+    'graph type': np.repeat(params[:, 2], 100*12),
+    'entropy': np.ravel(node_entropy)
+})
+print(df_remote_entropy)
+df_remote_entropy.to_csv('results/df_remote_entropy.csv', index = False)
 
