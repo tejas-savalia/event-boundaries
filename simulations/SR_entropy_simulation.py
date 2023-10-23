@@ -55,10 +55,27 @@ def create_lattice(graph_lattice):
     graph_lattice[14, (10, 11, 13, 2)] = 1
     return graph_lattice
 
+graph_with_remote = np.zeros((12, 12))
+def create_with_remote(graph_with_remote):
+    graph_with_remote = np.zeros((12, 12))
+    graph_with_remote[0, (1, 2)] = 1 
+    graph_with_remote[1, (0, 3, 4)] = 1
+    graph_with_remote[2, (0, 3, 4)] = 1
+    graph_with_remote[3, (1, 2, 4, 5)] = 1
+    graph_with_remote[4, (1, 2, 3, 5)] = 1
+    graph_with_remote[5, (3, 4, 6)] = 1
+    graph_with_remote[6, (5, 7, 8)] = 1
+    graph_with_remote[7, (6, 8, 9, 10)] = 1
+    graph_with_remote[8, (6, 7, 9, 10)] = 1
+    graph_with_remote[9, (7, 8, 11)] = 1
+    graph_with_remote[10, (7, 8, 11)] = 1
+    graph_with_remote[11, (9, 10)] = 1
+    return graph_with_remote
+
 
 def random_walk(graph):
     #Random Walk
-    start_state = np.random.choice(range(8))
+    start_state = np.random.choice(range(graph.shape[0]))
     path_length = 1000
     current_state = start_state
     path = np.zeros(path_length)
@@ -190,14 +207,33 @@ def compute_boundary_entropies(params):
                 print(boundary_entropy[e])
         return boundary_entropy - nonboundary_entropy
 
+def compute_node_entropies(params):
+    graph = np.zeros((12, 12))
+    node_entropy = np.zeros(graph.shape[0], 100)
+
+    alpha = params[0]
+    gamma = params[1]
+    if params[2] == 'modular':
+        graph = create_modular(graph)
+    elif params[2] == 'lattice':
+        graph = create_lattice(graph)
+    else:
+        graph = create_with_remote(graph)
+
+    for e in range(100):
+        path = random_walk(graph)
+        SR = draw_SR_categories(path, 1000, alpha=alpha, gamma=gamma, plot=False)
+        for node in range(graph.shape[0]):
+            node_entropy[node][e] = -np.sum(SR[node]*np.log(SR[node]))/6
+        return node_entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
+params = itertools.product([0.01], [0.75, 0.99], ['remote'])
 
 p = multiprocessing.Pool()
 # entropy = p.map(compute_entropies, params)
-boundary_entropy = p.map(compute_boundary_entropies, params)
-
+node_entropy = np.array(p.map(compute_node_entropies, params))
+print(node_entropy.shape)
 params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
 params = np.array([a for a in params])
 
