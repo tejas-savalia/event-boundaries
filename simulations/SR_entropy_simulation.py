@@ -211,7 +211,7 @@ def compute_boundary_entropies(params):
 
 def compute_node_entropies(params):
     graph = np.zeros((12, 12))
-    node_entropy = np.zeros((graph.shape[0], 100))
+    node_entropy = np.zeros((100, graph.shape[0]))
 
     alpha = params[0]
     gamma = params[1]
@@ -224,9 +224,9 @@ def compute_node_entropies(params):
 
     for e in range(100):
         path = random_walk(graph)
-        SR = draw_SR_categories(path, 1000, num_nodes=12, alpha=alpha, gamma=gamma, plot=False)
+        SR = draw_SR_categories(path, 1000, num_nodes=graph.shape[0], alpha=alpha, gamma=gamma, plot=False)
         for node in range(graph.shape[0]):
-            node_entropy[node][e] = -np.sum(SR[node]*np.log(SR[node]))
+            node_entropy[e][node] = -np.sum(SR[node]*np.log(SR[node]))
     return node_entropy
 
 
@@ -258,6 +258,7 @@ df_remote_entropy = pd.DataFrame({
     'alpha': np.repeat(params[:, 0], 100*12),
     'gamma': np.repeat(params[:, 1], 100*12),
     'graph type': np.repeat(params[:, 2], 100*12),
+    'node': np.repeat(np.tile(np.arange(12), 100), 49),
     'entropy': np.ravel(node_entropy)
 })
 print(df_remote_entropy)
