@@ -242,13 +242,13 @@ params = np.array([a for a in params])
 #     'gamma': np.repeat(params[:, 1], 100),
 #     'graph type': np.repeat(params[:, 2], 100),
 #     'entropy': np.ravel(entropy)
+# # })
+# df_boundary_entropy = pd.DataFrame({
+#     'alpha': np.repeat(params[:, 0], 100),
+#     'gamma': np.repeat(params[:, 1], 100),
+#     'entropy': np.ravel(boundary_entropy)
 # })
-df_boundary_entropy = pd.DataFrame({
-    'alpha': np.repeat(params[:, 0], 100),
-    'gamma': np.repeat(params[:, 1], 100),
-    'entropy': np.ravel(boundary_entropy)
-})
 
-print(df_boundary_entropy)
-df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
+# print(df_boundary_entropy)
+# df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
 
