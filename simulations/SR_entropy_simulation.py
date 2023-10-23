@@ -227,7 +227,7 @@ def compute_node_entropies(params):
         SR = draw_SR_categories(path, 1000, num_nodes=12, alpha=alpha, gamma=gamma, plot=False)
         for node in range(graph.shape[0]):
             node_entropy[node][e] = -np.sum(SR[node]*np.log(SR[node]))
-        return node_entropy
+    return node_entropy
 
 
 params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['remote'])
