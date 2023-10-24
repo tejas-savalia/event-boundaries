@@ -214,8 +214,9 @@ def compute_entropies(params):
     return entropy
 
 def compute_boundary_entropies(params):
-    boundary_entropy = np.zeros(100)
-    nonboundary_entropy = np.zeros(100)
+    boundary_entropy = 0
+    nonboundary_entropy = 0
+    entropy_diff = np.zeros(100)
     graph = np.zeros((15, 15))
 
     alpha = params[0]
@@ -236,9 +237,10 @@ def compute_boundary_entropies(params):
                 boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/6
             else:
                 nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/9
-            if e%99 == 0:
-                print(boundary_entropy[e])
-        return boundary_entropy - nonboundary_entropy
+        entropy_diff[e] = boundary_entropy - nonboundary_entropy
+        if e%99 == 0:
+            print(entropy_diff[e])
+    return entropy_diff
 
 def compute_node_entropies(params):
     graph = np.zeros((12, 12))
