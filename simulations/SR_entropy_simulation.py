@@ -96,6 +96,25 @@ def random_walk(graph):
     return path
         
 
+def random_hop(graph, hop_step = 1, path_length = 1000):
+    #Random Walk
+    start_state = np.random.choice(range(graph.shape[0]))
+    current_state = start_state
+    path = np.zeros(path_length)
+    for i in range(path_length):
+        path[i] = current_state
+
+        if path_length%hop_step == 0:
+            start_state = np.random.choice(range(graph.shape[0]))
+            current_state = start_state
+
+        neighbour_states = np.where(graph[current_state])[0]
+        next_state = np.random.choice(neighbour_states)
+        current_state = next_state
+
+    return path
+
+
 def draw_SR_categories(path, cutoff_point, alpha = 0.1, gamma = 0.1, num_nodes = 15, plot = True):
     SR = np.random.uniform(0, 1, size=(num_nodes, num_nodes))
     start_state = np.random.choice(np.arange(num_nodes))
@@ -262,7 +281,7 @@ df_boundary_entropy = pd.DataFrame({
 })
 
 print(df_boundary_entropy)
-df_boundary_entropy.to_csv('results/df_boundary_entropy_2clusters.csv', index = False)
+df_boundary_entropy.to_csv('results/df_boundary_entropy_onestephop.csv', index = False)
 
 # df_remote_entropy = pd.DataFrame({
 #     'alpha': np.repeat(params[:, 0], 100*12),
