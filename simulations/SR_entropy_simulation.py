@@ -267,13 +267,13 @@ def compute_node_entropies(params):
     return node_entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
 
 p = multiprocessing.Pool()
 # entropy = p.map(compute_entropies, params)
 # node_entropy = np.array(p.map(compute_node_entropies, params))
 boundary_entropy = np.array(p.map(compute_boundary_entropies, params))
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
 
 params = np.array([a for a in params])
 
@@ -286,12 +286,12 @@ params = np.array([a for a in params])
 df_boundary_entropy = pd.DataFrame({
     'alpha': np.repeat(params[:, 0], 100),
     'gamma': np.repeat(params[:, 1], 100),
-    # 'hop length': np.repeat(params[:, 3], 100),
+    'hop length': np.repeat(params[:, 3], 100),
     'entropy': np.ravel(boundary_entropy)
 })
 
 print(df_boundary_entropy)
-df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
+df_boundary_entropy.to_csv('results/df_boundary_entropy_hops.csv', index = False)
 
 # df_remote_entropy = pd.DataFrame({
 #     'alpha': np.repeat(params[:, 0], 100*12),
