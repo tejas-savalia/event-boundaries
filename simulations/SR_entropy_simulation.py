@@ -229,8 +229,10 @@ def compute_boundary_entropies(params):
         hop_step = params[3]
 
     for e in range(100):
-        # path = random_walk(graph)
-        path = random_hop(graph, hop_step=hop_step)
+        if len(params)>3:
+            path = random_hop(graph, hop_step=hop_step)
+        else:
+            path = random_walk(graph)
         SR = draw_SR_categories(path, 1000, num_nodes=15, alpha=alpha, gamma=gamma, plot=False)
         for node in range(graph.shape[0]):
             if node%5 == 0  or node%5 == 4:
@@ -263,13 +265,13 @@ def compute_node_entropies(params):
     return node_entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
 
 p = multiprocessing.Pool()
 # entropy = p.map(compute_entropies, params)
 # node_entropy = np.array(p.map(compute_node_entropies, params))
 boundary_entropy = np.array(p.map(compute_boundary_entropies, params))
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
 
 params = np.array([a for a in params])
 
@@ -282,12 +284,12 @@ params = np.array([a for a in params])
 df_boundary_entropy = pd.DataFrame({
     'alpha': np.repeat(params[:, 0], 100),
     'gamma': np.repeat(params[:, 1], 100),
-    'hop length': np.repeat(params[:, 3], 100),
+    # 'hop length': np.repeat(params[:, 3], 100),
     'entropy': np.ravel(boundary_entropy)
 })
 
 print(df_boundary_entropy)
-df_boundary_entropy.to_csv('results/df_boundary_entropy_hops.csv', index = False)
+df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
 
 # df_remote_entropy = pd.DataFrame({
 #     'alpha': np.repeat(params[:, 0], 100*12),
