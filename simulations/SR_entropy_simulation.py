@@ -15,7 +15,7 @@ import scipy
 
 graph = np.zeros((15, 15))
 def create_modular(graph):
-    graph[0, (1, 2, 3, 14)] = 1
+    graph[0, (1, 2, 3, 9)] = 1
     graph[1, (0, 2, 3, 4)] = 1
     graph[2, (0, 1, 3, 4)] = 1
     graph[3, (0, 1, 2, 4)] = 1
@@ -24,12 +24,21 @@ def create_modular(graph):
     graph[6, (5, 7, 8, 9)] = 1
     graph[7, (5, 6, 8, 9)] = 1
     graph[8, (5, 6, 7, 9)] = 1
-    graph[9, (6, 7, 8, 10)] = 1
-    graph[10, (9, 11, 12, 13)] = 1
-    graph[11, (10, 12, 13, 14)] = 1
-    graph[12, (10, 11, 13, 14)] = 1
-    graph[13, (10, 11, 12, 14)] = 1
-    graph[14, (11, 12, 13, 0)] = 1
+    graph[9, (6, 7, 8, 0)] = 1
+    # graph[10, (9, 11, 12, 13)] = 1
+    # graph[11, (10, 12, 13, 14)] = 1
+    # graph[12, (10, 11, 13, 14)] = 1
+    # graph[13, (10, 11, 12, 14)] = 1
+    # graph[14, (11, 12, 13, 0)] = 1
+    # graph[0, (1, 2, 4)] = 1
+    # graph[1, (0, 2, 3)] = 1
+    # graph[2, (0, 1, 3)] = 1
+    # graph[3, (1, 2, 7)] = 1
+    # graph[4, (5, 6, 0)] = 1
+    # graph[5, (4, 6, 7)] = 1
+    # graph[6, (4, 5, 7)] = 1
+    # graph[7, (5, 6, 3)] = 1
+    
     return graph
 # graph[0, 2] = 1
 # graph[2, 0] = 1
@@ -188,7 +197,7 @@ def compute_entropies(params):
 def compute_boundary_entropies(params):
     boundary_entropy = np.zeros(100)
     nonboundary_entropy = np.zeros(100)
-    graph = np.zeros((15, 15))
+    graph = np.zeros((10, 10))
 
     alpha = params[0]
     gamma = params[1]
@@ -199,12 +208,12 @@ def compute_boundary_entropies(params):
 
     for e in range(100):
         path = random_walk(graph)
-        SR = draw_SR_categories(path, 1000, alpha=alpha, gamma=gamma, plot=False)
-        for node in range(15):
+        SR = draw_SR_categories(path, 1000, num_nodes=10, alpha=alpha, gamma=gamma, plot=False)
+        for node in range(graph.shape[0]):
             if node%5 == 0  or node%5 == 4:
-                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/6
+                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/4
             else:
-                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/9
+                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/6
             if e%99 == 0:
                 print(boundary_entropy[e])
         return boundary_entropy - nonboundary_entropy
@@ -230,12 +239,13 @@ def compute_node_entropies(params):
     return node_entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['remote'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
 
 p = multiprocessing.Pool()
 # entropy = p.map(compute_entropies, params)
-node_entropy = np.array(p.map(compute_node_entropies, params))
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['remote'])
+# node_entropy = np.array(p.map(compute_node_entropies, params))
+boundary_entropy = np.array(p.map(compute_boundary_entropies, params))
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
 
 params = np.array([a for a in params])
 
@@ -245,22 +255,22 @@ params = np.array([a for a in params])
 #     'graph type': np.repeat(params[:, 2], 100),
 #     'entropy': np.ravel(entropy)
 # # })
-# df_boundary_entropy = pd.DataFrame({
-#     'alpha': np.repeat(params[:, 0], 100),
-#     'gamma': np.repeat(params[:, 1], 100),
-#     'entropy': np.ravel(boundary_entropy)
-# })
+df_boundary_entropy = pd.DataFrame({
+    'alpha': np.repeat(params[:, 0], 100),
+    'gamma': np.repeat(params[:, 1], 100),
+    'entropy': np.ravel(boundary_entropy)
+})
 
-# print(df_boundary_entropy)
+print(df_boundary_entropy)
 # df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
 
-df_remote_entropy = pd.DataFrame({
-    'alpha': np.repeat(params[:, 0], 100*12),
-    'gamma': np.repeat(params[:, 1], 100*12),
-    'graph type': np.repeat(params[:, 2], 100*12),
-    'node': np.repeat(np.tile(np.arange(12), 100), 49),
-    'entropy': np.ravel(node_entropy)
-})
-print(df_remote_entropy)
-df_remote_entropy.to_csv('results/df_remote_entropy.csv', index = False)
+# df_remote_entropy = pd.DataFrame({
+#     'alpha': np.repeat(params[:, 0], 100*12),
+#     'gamma': np.repeat(params[:, 1], 100*12),
+#     'graph type': np.repeat(params[:, 2], 100*12),
+#     'node': np.repeat(np.tile(np.arange(12), 100), 49),
+#     'entropy': np.ravel(node_entropy)
+# })
+# print(df_remote_entropy)
+# df_remote_entropy.to_csv('results/df_remote_entropy.csv', index = False)
 
