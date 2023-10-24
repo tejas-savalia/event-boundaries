@@ -267,13 +267,13 @@ def compute_node_entropies(params):
     return node_entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3, 4])
 
 p = multiprocessing.Pool()
 # entropy = p.map(compute_entropies, params)
 # node_entropy = np.array(p.map(compute_node_entropies, params))
 boundary_entropy = np.array(p.map(compute_boundary_entropies, params))
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3, 4])
 
 params = np.array([a for a in params])
 
