@@ -15,7 +15,7 @@ import scipy
 
 graph = np.zeros((15, 15))
 def create_modular(graph):
-    graph[0, (1, 2, 3, 9)] = 1
+    graph[0, (1, 2, 3, 14)] = 1
     graph[1, (0, 2, 3, 4)] = 1
     graph[2, (0, 1, 3, 4)] = 1
     graph[3, (0, 1, 2, 4)] = 1
@@ -24,12 +24,12 @@ def create_modular(graph):
     graph[6, (5, 7, 8, 9)] = 1
     graph[7, (5, 6, 8, 9)] = 1
     graph[8, (5, 6, 7, 9)] = 1
-    graph[9, (6, 7, 8, 0)] = 1
-    # graph[10, (9, 11, 12, 13)] = 1
-    # graph[11, (10, 12, 13, 14)] = 1
-    # graph[12, (10, 11, 13, 14)] = 1
-    # graph[13, (10, 11, 12, 14)] = 1
-    # graph[14, (11, 12, 13, 0)] = 1
+    graph[9, (6, 7, 8, 10)] = 1
+    graph[10, (9, 11, 12, 13)] = 1
+    graph[11, (10, 12, 13, 14)] = 1
+    graph[12, (10, 11, 13, 14)] = 1
+    graph[13, (10, 11, 12, 14)] = 1
+    graph[14, (11, 12, 13, 0)] = 1
     # graph[0, (1, 2, 4)] = 1
     # graph[1, (0, 2, 3)] = 1
     # graph[2, (0, 1, 3)] = 1
@@ -216,7 +216,7 @@ def compute_entropies(params):
 def compute_boundary_entropies(params):
     boundary_entropy = np.zeros(100)
     nonboundary_entropy = np.zeros(100)
-    graph = np.zeros((10, 10))
+    graph = np.zeros((15, 15))
 
     alpha = params[0]
     gamma = params[1]
@@ -224,15 +224,18 @@ def compute_boundary_entropies(params):
         graph = create_modular(graph)
     else:
         graph = create_lattice(graph)
+    if len(params)>3:
+        hop_step = params[3]
 
     for e in range(100):
-        path = random_walk(graph)
-        SR = draw_SR_categories(path, 1000, num_nodes=10, alpha=alpha, gamma=gamma, plot=False)
+        # path = random_walk(graph)
+        path = random_hop(graph, hop_step=hop_step)
+        SR = draw_SR_categories(path, 1000, num_nodes=15, alpha=alpha, gamma=gamma, plot=False)
         for node in range(graph.shape[0]):
             if node%5 == 0  or node%5 == 4:
-                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/4
+                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/6
             else:
-                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/6
+                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/9
             if e%99 == 0:
                 print(boundary_entropy[e])
         return boundary_entropy - nonboundary_entropy
@@ -258,13 +261,13 @@ def compute_node_entropies(params):
     return node_entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
 
 p = multiprocessing.Pool()
 # entropy = p.map(compute_entropies, params)
 # node_entropy = np.array(p.map(compute_node_entropies, params))
 boundary_entropy = np.array(p.map(compute_boundary_entropies, params))
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'])
+params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3])
 
 params = np.array([a for a in params])
 
@@ -277,11 +280,12 @@ params = np.array([a for a in params])
 df_boundary_entropy = pd.DataFrame({
     'alpha': np.repeat(params[:, 0], 100),
     'gamma': np.repeat(params[:, 1], 100),
+    'hop length': np.repeat(params[:, 3], 100),
     'entropy': np.ravel(boundary_entropy)
 })
 
 print(df_boundary_entropy)
-df_boundary_entropy.to_csv('results/df_boundary_entropy_onestephop.csv', index = False)
+df_boundary_entropy.to_csv('results/df_boundary_entropy_hops.csv', index = False)
 
 # df_remote_entropy = pd.DataFrame({
 #     'alpha': np.repeat(params[:, 0], 100*12),
