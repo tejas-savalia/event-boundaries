@@ -236,10 +236,12 @@ def compute_boundary_entropies(params):
         SR = draw_SR_categories(path, 1000, num_nodes=15, alpha=alpha, gamma=gamma, plot=False)
         for node in range(graph.shape[0]):
             if node%5 == 0  or node%5 == 4:
-                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/6
+                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))
             else:
-                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))/9
-        entropy_diff[e] = boundary_entropy - nonboundary_entropy
+                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))
+        entropy_diff[e] = boundary_entropy/6 - nonboundary_entropy/9
+        boundary_entropy = 0
+        nonboundary_entropy = 0
         if e%99 == 0:
             print(entropy_diff[e])
     return entropy_diff
