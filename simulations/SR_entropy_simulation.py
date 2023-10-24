@@ -262,7 +262,7 @@ df_boundary_entropy = pd.DataFrame({
 })
 
 print(df_boundary_entropy)
-# df_boundary_entropy.to_csv('results/df_boundary_entropy.csv', index = False)
+df_boundary_entropy.to_csv('results/df_boundary_entropy_2clusters.csv', index = False)
 
 # df_remote_entropy = pd.DataFrame({
 #     'alpha': np.repeat(params[:, 0], 100*12),
