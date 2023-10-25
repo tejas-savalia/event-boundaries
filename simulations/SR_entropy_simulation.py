@@ -132,14 +132,14 @@ def compute_node_entropies(params):
 if __name__ == '__main__':
     p = multiprocessing.Pool()
     params = list(itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], ['walk', 'hop'], [1, 2, 3, 4]))
-
+    print(np.array(params)[:, 0])
     node_entropies = np.array([p.map(compute_node_entropies, params) for _ in range(100)])
 
     df_node_entropies = pd.DataFrame({
-    'alpha': np.tile(np.repeat(np.array(params[:, 0]), 15), 100),
-    'gamma': np.tile(np.repeat(np.array(params[:, 1]), 15), 100),
-    'walk type': np.tile(np.repeat(np.array(params[:, 2]), 15), 100),
-    'hope length': np.tile(np.repeat(np.array(params[:, 3]), 15), 100),
+    'alpha': np.tile(np.repeat(np.array(params)[:, 0], 15), 100),
+    'gamma': np.tile(np.repeat(np.array(params)[:, 1], 15), 100),
+    'walk type': np.tile(np.repeat(np.array(params)[:, 2], 15), 100),
+    'hope length': np.tile(np.repeat(np.array(params)[:, 3], 15), 100),
     'iteration': np.repeat(np.arange(100), len(params)*15),
     'node entropies': np.ravel(node_entropies)
     })
