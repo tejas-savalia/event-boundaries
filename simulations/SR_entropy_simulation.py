@@ -1,91 +1,55 @@
-import os, itertools, multiprocessing
-# os.environ['OMP_NUM_THREADS']="1"
 import numpy as np
 import pandas as pd
-import scipy.stats as stat
-import seaborn as sns
 import matplotlib.pyplot as plt
-# from hmmviz import TransGraphy
+import seaborn as sns
 import networkx as nx
+import itertools, multiprocessing
+import scipy.stats as stat
 from sklearn.cluster import KMeans
-from sklearn.mixture import GaussianMixture
-import matplotlib as mpl
-import scipy
 
 
-graph = np.zeros((15, 15))
-def create_modular(graph):
-    graph[0, (1, 2, 3, 14)] = 1
-    graph[1, (0, 2, 3, 4)] = 1
-    graph[2, (0, 1, 3, 4)] = 1
-    graph[3, (0, 1, 2, 4)] = 1
-    graph[4, (1, 2, 3, 5)] = 1
-    graph[5, (4, 6, 7, 8)] = 1
-    graph[6, (5, 7, 8, 9)] = 1
-    graph[7, (5, 6, 8, 9)] = 1
-    graph[8, (5, 6, 7, 9)] = 1
-    graph[9, (6, 7, 8, 10)] = 1
-    graph[10, (9, 11, 12, 13)] = 1
-    graph[11, (10, 12, 13, 14)] = 1
-    graph[12, (10, 11, 13, 14)] = 1
-    graph[13, (10, 11, 12, 14)] = 1
-    graph[14, (11, 12, 13, 0)] = 1
-    # graph[0, (1, 2, 4)] = 1
-    # graph[1, (0, 2, 3)] = 1
-    # graph[2, (0, 1, 3)] = 1
-    # graph[3, (1, 2, 7)] = 1
-    # graph[4, (5, 6, 0)] = 1
-    # graph[5, (4, 6, 7)] = 1
-    # graph[6, (4, 5, 7)] = 1
-    # graph[7, (5, 6, 3)] = 1
-    
-    return graph
-# graph[0, 2] = 1
-# graph[2, 0] = 1
+def create_adjacency_matrix_for_modular_graph(num_nodes, num_modules, module_sizes, inter_module_edges, boundary_nodes):
+  """
+  Creates an adjacency matrix for a graph with modular structure.
 
-# graph[1, 2] = 1
+  Args:
+    num_nodes: The total number of nodes in the graph.
+    num_modules: The number of modules in the graph.
+    module_sizes: A list of the sizes of each module.
+    inter_module_edges: A list of edges between modules.
 
-graph_lattice = np.zeros((15, 15))
-def create_lattice(graph_lattice):
-    graph_lattice[0, (1, 2, 3, 12)] = 1
-    graph_lattice[1, (0, 2, 4, 13)] = 1
-    graph_lattice[2, (0, 1, 5, 14)] = 1
-    graph_lattice[3, (0, 4, 5, 6)] = 1
-    graph_lattice[4, (1, 3, 5, 7)] = 1
-    graph_lattice[5, (2, 3, 4, 8)] = 1
-    graph_lattice[6, (3, 7, 8, 9)] = 1
-    graph_lattice[7, (4, 6, 8, 10)] = 1
-    graph_lattice[8, (5, 6, 7, 11)] = 1
-    graph_lattice[9, (6, 10, 11, 12)] = 1
-    graph_lattice[10, (7, 9, 11, 13)] = 1
-    graph_lattice[11, (8, 9, 10, 14)] = 1
-    graph_lattice[12, (9, 13, 14, 0)] = 1
-    graph_lattice[13, (10, 12, 14, 1)] = 1
-    graph_lattice[14, (10, 11, 13, 2)] = 1
-    return graph_lattice
+  Returns:
+    An adjacency matrix for the graph.
+  """
 
-graph_with_remote = np.zeros((12, 12))
-def create_with_remote(graph_with_remote):
-    graph_with_remote = np.zeros((12, 12))
-    graph_with_remote[0, (1, 2)] = 1 
-    graph_with_remote[1, (0, 3, 4)] = 1
-    graph_with_remote[2, (0, 3, 4)] = 1
-    graph_with_remote[3, (1, 2, 4, 5)] = 1
-    graph_with_remote[4, (1, 2, 3, 5)] = 1
-    graph_with_remote[5, (3, 4, 6)] = 1
-    graph_with_remote[6, (5, 7, 8)] = 1
-    graph_with_remote[7, (6, 8, 9, 10)] = 1
-    graph_with_remote[8, (6, 7, 9, 10)] = 1
-    graph_with_remote[9, (7, 8, 11)] = 1
-    graph_with_remote[10, (7, 8, 11)] = 1
-    graph_with_remote[11, (9, 10)] = 1
-    return graph_with_remote
+  # Create an empty adjacency matrix.
+  adj_matrix = np.zeros((num_nodes, num_nodes))
 
+  # Add edges within each module.
+  for module_index in range(num_modules):
+    module_start_index = sum(module_sizes[:module_index])
+    module_end_index = module_start_index + module_sizes[module_index]
 
-def random_walk(graph):
+    for node_index in range(module_start_index, module_end_index):
+      for other_node_index in range(module_start_index, module_end_index):
+        if node_index != other_node_index:
+          adj_matrix[node_index, other_node_index] = 1
+        
+  for node_i in boundary_nodes:
+    for node_j in boundary_nodes:
+      adj_matrix[node_i][node_j] = 0
+
+  # Add edges between modules.
+  for edge in inter_module_edges:
+    node_index_1, node_index_2 = edge
+    adj_matrix[node_index_1, node_index_2] = 1
+    adj_matrix[node_index_2, node_index_1] = 1
+
+  return adj_matrix
+
+def random_walk(graph, path_length = 1000):
     #Random Walk
     start_state = np.random.choice(range(graph.shape[0]))
-    path_length = 1000
     current_state = start_state
     path = np.zeros(path_length)
     for i in range(path_length):
@@ -101,28 +65,29 @@ def random_hop(graph, hop_step = 1, path_length = 1000):
     start_state = np.random.choice(range(graph.shape[0]))
     current_state = start_state
     path = np.zeros(path_length)
-    for i in range(path_length):
-        path[i] = current_state
 
-        if path_length%hop_step == 0:
+    for i in range(path_length):
+
+        if i%hop_step == 0:
             start_state = np.random.choice(range(graph.shape[0]))
             current_state = start_state
 
         neighbour_states = np.where(graph[current_state])[0]
         next_state = np.random.choice(neighbour_states)
+        path[i] = current_state
         current_state = next_state
 
     return path
 
 
-def draw_SR_categories(path, cutoff_point, alpha = 0.1, gamma = 0.1, num_nodes = 15, plot = True):
-    SR = np.random.uniform(0, 1, size=(num_nodes, num_nodes))
+def run_SR(path, graph, alpha = 0.1, gamma = 0.1, plot = True):
+    SR = np.random.uniform(0, 1, size=graph.shape)
+    num_nodes = graph.shape[0]
     start_state = np.random.choice(np.arange(num_nodes))
     current_state = start_state    
-    cmap = plt.cm.rainbow
 
 
-    for i, observed_state in enumerate(path[:cutoff_point]):
+    for observed_state in path:
 
         expected_probs = SR[current_state]
         one_hot_obs = np.zeros(num_nodes)
@@ -132,174 +97,52 @@ def draw_SR_categories(path, cutoff_point, alpha = 0.1, gamma = 0.1, num_nodes =
 
         SR[current_state, :] = SR[current_state, :] + alpha*SR_delta
         SR[current_state, :] = SR[current_state, :]/sum(SR[current_state])
-        current_state = int(observed_state)    
-
-
-
+        current_state = int(observed_state)
 
     if plot:
-        G = nx.Graph() 
-
-
-        kmeans = KMeans(n_clusters=3, random_state=0, n_init="auto").fit(SR)
-    #     gm = GaussianMixture(n_components=3, random_state=0, reg_covar=0.05).fit(SR)
-        node_color = []
-        node_transparency = []
-        clusters_assigned = kmeans.predict(SR)
-        centroids = kmeans.cluster_centers_
-        
-    #     print(distances)
-
-    #     print(prob, cluster)
-    #     print(prob)
-        for node in range(num_nodes):
-            node_distance = np.linalg.norm(SR[node] - centroids, axis=1)
-
-    #         node_confidences = np.exp(-node_distance / 2) / np.sum(np.exp(-node_distance / 2), axis=0)
-            node_confidences = scipy.special.softmax(1/node_distance)
-            node_transparency.append(node_confidences)
-            
-            
-
-            if kmeans.labels_[node] == 0:
-    #         if cluster[node] == 0:
-                node_color.append('red')
-            elif kmeans.labels_[node] == 1:
-    #         elif cluster[node] == 1:
-                node_color.append('green')
-            else:
-                node_color.append('blue')
-            
-            G.add_node(str(node))
-
-        # print(node_transparency)
-
-
-        for i in range(SR.shape[0]):
-            for j in range(SR.shape[1]):
-                G.add_edge(str(i), str(j), weight = SR[i][j])    
-                
-        edges = G.edges
-        weights = [SR[int(u)][int(v)] for u,v in edges]
-
-        node_pos = nx.spring_layout(G)
-        node_labels = np.arange(num_nodes).astype(str)
-
-        nx.draw_networkx_nodes(G, pos=node_pos, node_color=node_transparency,  nodelist=G.nodes)
-        nx.draw_networkx_edges(G, pos=node_pos, width=weights)
-        nx.draw_networkx_labels(G, pos = node_pos)
-        
-        nx.draw(G, node_color=node_color, width = weights, with_labels = True, alpha=0.5)#, alpha = node_transparency)
-    
-    # plt.show()
+        sns.heatmap(SR)
     return SR
 
-def compute_entropies(params):
-    entropy = np.zeros(100)
-    graph = np.zeros((15, 15))
-
-    alpha = params[0]
-    gamma = params[1]
-    if params[2] == 'modular':
-        graph = create_modular(graph)
-    else:
-        graph = create_lattice(graph)
-
-    for e in range(100):
-        path = random_walk(graph)
-        SR = draw_SR_categories(path, 1000, alpha=alpha, gamma=gamma, plot=False)
-        entropy[e] = -np.sum(SR*np.log(SR))
-        if e%99 == 0:
-            print(entropy[e])
-    return entropy
-
-def compute_boundary_entropies(params):
-    boundary_entropy = 0
-    nonboundary_entropy = 0
-    entropy_diff = np.zeros(100)
-    graph = np.zeros((15, 15))
-
-    alpha = params[0]
-    gamma = params[1]
-    if params[2] == 'modular':
-        graph = create_modular(graph)
-    else:
-        graph = create_lattice(graph)
-    if len(params)>3:
-        hop_step = params[3]
-
-    for e in range(100):
-        if len(params)>3:
-            path = random_hop(graph, hop_step=hop_step)
-        else:
-            path = random_walk(graph)
-        SR = draw_SR_categories(path, 1000, num_nodes=15, alpha=alpha, gamma=gamma, plot=False)
-        for node in range(graph.shape[0]):
-            if node%5 == 0  or node%5 == 4:
-                boundary_entropy += -np.sum(SR[node]*np.log(SR[node]))
-            else:
-                nonboundary_entropy += -np.sum(SR[node]*np.log(SR[node]))
-        entropy_diff[e] = boundary_entropy/6 - nonboundary_entropy/9
-        boundary_entropy = 0
-        nonboundary_entropy = 0
-        if e%99 == 0:
-            print(entropy_diff[e])
-    return entropy_diff
-
 def compute_node_entropies(params):
-    graph = np.zeros((12, 12))
-    node_entropy = np.zeros((100, graph.shape[0]))
-
     alpha = params[0]
     gamma = params[1]
-    if params[2] == 'modular':
-        graph = create_modular(graph)
-    elif params[2] == 'lattice':
-        graph = create_lattice(graph)
-    else:
-        graph = create_with_remote(graph)
+    num_nodes = 15
+    num_modules = 3
+    boundary_nodes = [x for x in range(num_nodes) if ((x%5 == 0) or (x%5 == 4))]
+    crossmodule_connections = [(0, 14), (4, 5), (9, 10)]
+    node_entropy = np.zeros(num_nodes)
 
-    for e in range(100):
-        path = random_walk(graph)
-        SR = draw_SR_categories(path, 1000, num_nodes=graph.shape[0], alpha=alpha, gamma=gamma, plot=False)
-        for node in range(graph.shape[0]):
-            node_entropy[e][node] = -np.sum(SR[node]*np.log(SR[node]))
+    graph = create_adjacency_matrix_for_modular_graph(num_nodes, num_modules, np.repeat(num_nodes//num_modules, num_modules), 
+                                                      crossmodule_connections, boundary_nodes)
+    if len(params)>2:
+        if params[2] == 'hop':
+            SR = run_SR(path=random_hop(graph, hop_step=params[3]), graph=graph, alpha=alpha, gamma=gamma, plot=False)
+        else:
+            SR = run_SR(path=random_walk(graph), graph=graph, alpha=alpha, gamma=gamma, plot=False)
+
+            
+
+    # graph_entropy = -np.sum(SR*np.log(SR))
+    for node in range(graph.shape[0]):
+        node_entropy[node] = -np.sum(SR[node]*np.log(SR[node]))
+
     return node_entropy
 
 
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3, 4, 5])
+if __name__ == '__main__':
+    p = multiprocessing.Pool()
+    params = list(itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], ['walk', 'hop'], [1, 2, 3, 4]))
 
-p = multiprocessing.Pool()
-# entropy = p.map(compute_entropies, params)
-# node_entropy = np.array(p.map(compute_node_entropies, params))
-boundary_entropy = np.array(p.map(compute_boundary_entropies, params))
-params = itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.99], ['modular'], [1, 2, 3, 4, 5])
+    node_entropies = np.array([p.map(compute_node_entropies, params) for _ in range(100)])
 
-params = np.array([a for a in params])
+    df_node_entropies = pd.DataFrame({
+    'alpha': np.tile(np.repeat(np.array(params[:, 0]), 15), 100),
+    'gamma': np.tile(np.repeat(np.array(params[:, 1]), 15), 100),
+    'walk type': np.tile(np.repeat(np.array(params[:, 2]), 15), 100),
+    'hope length': np.tile(np.repeat(np.array(params[:, 3]), 15), 100),
+    'iteration': np.repeat(np.arange(100), len(params)*15),
+    'node entropies': np.ravel(node_entropies)
+    })
 
-# df_entropy = pd.DataFrame({
-#     'alpha': np.repeat(params[:, 0], 100),
-#     'gamma': np.repeat(params[:, 1], 100),
-#     'graph type': np.repeat(params[:, 2], 100),
-#     'entropy': np.ravel(entropy)
-# # })
-df_boundary_entropy = pd.DataFrame({
-    'alpha': np.repeat(params[:, 0], 100),
-    'gamma': np.repeat(params[:, 1], 100),
-    'hop length': np.repeat(params[:, 3], 100),
-    'entropy': np.ravel(boundary_entropy)
-})
-
-print(df_boundary_entropy)
-df_boundary_entropy.to_csv('results/df_boundary_entropy_hops.csv', index = False)
-
-# df_remote_entropy = pd.DataFrame({
-#     'alpha': np.repeat(params[:, 0], 100*12),
-#     'gamma': np.repeat(params[:, 1], 100*12),
-#     'graph type': np.repeat(params[:, 2], 100*12),
-#     'node': np.repeat(np.tile(np.arange(12), 100), 49),
-#     'entropy': np.ravel(node_entropy)
-# })
-# print(df_remote_entropy)
-# df_remote_entropy.to_csv('results/df_remote_entropy.csv', index = False)
-
+    print(df_node_entropies)
+    df_node_entropies.to_csv('modular_node_entropies.csv')
