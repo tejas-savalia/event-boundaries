@@ -131,7 +131,7 @@ def compute_node_entropies(params):
 
 if __name__ == '__main__':
     p = multiprocessing.Pool()
-    params = list(itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], ['walk', 'hop'], [1, 2, 3, 4]))
+    params = list(itertools.product([0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9], ['walk', 'hop'], [1, 2, 3, 4, 5, 6]))
     print(np.array(params)[:, 0])
     node_entropies = np.array([p.map(compute_node_entropies, params) for _ in range(100)])
 
