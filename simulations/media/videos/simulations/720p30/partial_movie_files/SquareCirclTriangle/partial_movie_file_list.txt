@@ -1,0 +1,3 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/tejas/Documents/Research/event boundaries/event_boundaries_analyses/simulations/media/videos/simulations/720p30/partial_movie_files/SquareCirclTriangle/2016333726_3649372508_4209158877.mp4'
+file 'file:C:/Users/tejas/Documents/Research/event boundaries/event_boundaries_analyses/simulations/media/videos/simulations/720p30/partial_movie_files/SquareCirclTriangle/543634251_1959358871_1322713782.mp4'

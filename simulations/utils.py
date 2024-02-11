@@ -61,7 +61,8 @@ def plot_graph(graph):
 
 def random_hop(graph, hop_step = 1, path_length = 1000):
     #Random Walk
-    start_state = np.random.choice(range(graph.shape[0]))
+    # start_state = np.random.choice(range(graph.shape[0]))
+    start_state = 0
     current_state = start_state
     path = np.zeros(path_length)
 
