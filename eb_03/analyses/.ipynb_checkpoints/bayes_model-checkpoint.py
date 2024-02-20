@@ -89,11 +89,23 @@ df_clean_rt_outlier['num_keypress'] = df_clean_rt_outlier['num_keypress'].astype
 
 
 
+
 #Removing the first trial because it may bias the reset parameter
 df_clean_rt_outlier = df_clean_rt_outlier.loc[df_clean_rt_outlier['trial'] > 0].reset_index(drop=True)
 
+
+#Grouping by trials
+df_clean_rt_outlier_median = df_clean_rt_outlier.loc[df_clean_rt_outlier['trial'] > 0].reset_index(drop=True).groupby(['participant', 'trial', 'transition_type', 'walk_length', 'reset']).mean(numeric_only=True).reset_index()
+df_clean_rt_outlier_median_cross = df_clean_rt_outlier_median.loc[df_clean_rt_outlier_median['transition_type'] == 'cross cluster'].reset_index(drop=True)
+df_clean_rt_outlier_median_within = df_clean_rt_outlier_median.loc[df_clean_rt_outlier_median['transition_type'] == 'within cluster'].reset_index(drop=True)
+diff = df_clean_rt_outlier_median_cross.merge(df_clean_rt_outlier_median_within, on = ['participant', 'blocks.thisRepN', 'walk_length'])
+# df_clean_rt_outlier_median_diff['diff'] = df_clean_rt_outlier_median.loc[df_clean_rt_outlier_median['transition_type'] == 'cross cluster', 'rt'].values - df_clean_rt_outlier_median.loc[df_clean_rt_outlier_median['transition_type'] == 'Non Boundary', 'rt'].values
+diff['rt_diff'] = diff['rt_x'] - diff['rt_y']
+
 #Specifying the bayes model
-model = bmb.Model("rt ~ reset + lag + blocks.thisRepN*walk_length + walk_length*transition_type +  (transition_type|participant) + (blocks.thisRepN|participant) + (num_keypress|participant)", data = df_clean_rt_outlier)
+model = bmb.Model("rt_diff ~ blocks.thisRepN*walk_length +  (1|participant)", data = diff)
+
+# model = bmb.Model("diff ~ reset + lag + blocks.thisRepN*walk_length + walk_length*transition_type +  (transition_type|participant) + (blocks.thisRepN|participant) + (num_keypress|participant)", data = df_clean_rt_outlier)
 model.build()
 # model.graph()
 sample = model.fit()
@@ -101,19 +113,19 @@ sample = model.fit()
 
 #Plotting. Specifying order of plots
 coords = {'walk_length_dim': ['1400', '6', '3'], 
-          'walk_length:transition_type_dim':['1400, within cluster', '6, within cluster', '3, within cluster'],
+          # 'walk_length:transition_type_dim':['1400, within cluster', '6, within cluster', '3, within cluster'],
           'blocks.thisRepN:walk_length_dim':['1400', '6', '3'],
          }
 #Plot posteriors
 az.plot_posterior(sample, point_estimate='median', ref_val=0, hdi_prob=.95, var_names='~participant', filter_vars='like', coords = coords)
 plt.tight_layout()
-plt.savefig('results/posteriors_bayesianmodel_0_params_rt.png', dpi = 600)
+plt.savefig('results/posteriors_bayesianmodel_0_params_rt_diff_trialgrouped.png', dpi = 600)
 
 #Plot ridge plot
 g = az.plot_forest(sample, var_names='~participant', filter_vars='like', kind = 'ridgeplot', ridgeplot_quantiles = [0.5], ridgeplot_alpha=0.2, ridgeplot_overlap=1, 
               coords = coords)
 g[0].axvline(0, ls = '--', color = 'black')
-plt.savefig('results/ridgeplot_bayesianmodel_0_params_rt.png', dpi = 600)
+plt.savefig('results/posteriors_bayesianmodel_0_params_rt_diff_trialgrouped.png', dpi = 600)
 
 #Save the model
-az.to_netcdf(sample, 'results/bayesian_model0_rt')
+az.to_netcdf(sample, 'results/bayesian_model0_rt_diff_trialgrouped')
