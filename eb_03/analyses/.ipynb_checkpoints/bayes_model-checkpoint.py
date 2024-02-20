@@ -108,7 +108,7 @@ model = bmb.Model("rt_diff ~ blocks.thisRepN*walk_length +  (1|participant)", da
 # model = bmb.Model("diff ~ reset + lag + blocks.thisRepN*walk_length + walk_length*transition_type +  (transition_type|participant) + (blocks.thisRepN|participant) + (num_keypress|participant)", data = df_clean_rt_outlier)
 model.build()
 # model.graph()
-sample = model.fit()
+sample = model.fit(inference_method = 'nuts_numpyro')
 
 
 #Plotting. Specifying order of plots
